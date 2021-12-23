@@ -16,28 +16,18 @@ rule download_sequences:
         url = "https://github.com/robert-koch-institut/SARS-CoV-2-Sequenzdaten_aus_Deutschland/raw/master/SARS-CoV-2-Sequenzdaten_Deutschland.fasta.xz"
     shell: "curl -L {params.url} >{output}"
 
-# rule subsample_sequences:
-#     input: rules.download_sequences.output
-#     output: "data/subsample.fasta.gz"
-#     shell: "xz -dc {input} | seqkit sample -p {subsample_ratio} -o {output}"
-
-rule xz_to_gz:
-    input: "data/sequences.fasta.xz"
-    output: temp("data/sequences.fasta.gz")
-    shell: "xz -dc {input} | gzip -c > {output}"
-
 rule split_sequences:
-    input: "data/sequences.fasta.gz"
-    output: temp(expand("split/sequences.part_{part:03d}.fasta.gz", part=range(1,split_number+1)))
+    input: "data/sequences.fasta.xz"
+    output: temp(expand("split/stdin.part_{part:03d}", part=range(1,split_number+1)))
     shell:
         """
-        seqkit split2 {input} -p {split_number} -O split
+        xzcat -dc {input} | seqkit split2 /dev/stdin -p {split_number} -O split
         """
 
-rule unzip_split:
-    input: "split/sequences.part_{part}.fasta.gz"
-    output: temp("split/sequences.part_{part}.fasta")
-    shell: "gunzip -c {input} > {output}"
+# rule unzip_split:
+#     input: "split/sequences.part_{part}.fasta.gz"
+#     output: temp("split/sequences.part_{part}.fasta")
+#     shell: "gunzip -c {input} > {output}"
 
 rule download_nextclade_dataset:        
     output: directory("data/nextclade_dataset")
@@ -45,7 +35,7 @@ rule download_nextclade_dataset:
 
 rule run_nextclade:
     input:
-        sequences = "split/sequences.part_{part}.fasta",
+        sequences = "split/stdin.part_{part}",
         dataset = rules.download_nextclade_dataset.output,
     output:
         output_tsv = temp("results/nextclade_results_{part}.tsv"),
@@ -56,10 +46,10 @@ rule run_nextclade:
         """
         nextclade run \
             -j{threads} \
-            --in-order \
             -i {input.sequences} \
             --input-dataset {input.dataset} \
             -t {output.output_tsv} \
+            --verbosity warn \
             -d {params.output_alignments};
         rm -r {params.output_alignments}; \
         """
