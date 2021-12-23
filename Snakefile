@@ -31,7 +31,7 @@ rule split_sequences:
     output: temp(expand("split/sequences.part_{part:03d}.fasta.gz", part=range(1,split_number+1)))
     shell:
         """
-        seqkit split2 {input} -p {split_number} -O split && \
+        seqkit split2 {input} -p {split_number} -O split
         """
 
 rule unzip_split:
