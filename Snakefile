@@ -14,7 +14,7 @@ rule download_sequences:
     output: "data/sequences.fasta.xz"
     params:
         url = "https://github.com/robert-koch-institut/SARS-CoV-2-Sequenzdaten_aus_Deutschland/raw/master/SARS-CoV-2-Sequenzdaten_Deutschland.fasta.xz"
-    shell: "curl {params.url} >{output}"
+    shell: "curl -L {params.url} >{output}"
 
 # rule subsample_sequences:
 #     input: rules.download_sequences.output
