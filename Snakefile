@@ -1,6 +1,6 @@
 split_number = 50
 
-localrules: subsample_sequences,diff,split_nextclade_results,collect_nextclade_results,unzip_split,split_sequences,download_nextclade_binary,download_nextclade_dataset,download_sequences
+localrules: collect_nextclade_results,unzip_split,split_sequences,download_nextclade_dataset,download_sequences
 
 wildcard_constraints:
     version="[^_]*",
@@ -8,7 +8,7 @@ wildcard_constraints:
     types="[^_]*",
 
 rule all:
-    input: "results/nextclade.tsv
+    input: "results/nextclade.tsv"
 
 rule download_sequences:
     output: "data/sequences.fasta.xz"
@@ -35,8 +35,8 @@ rule split_sequences:
         """
 
 rule unzip_split:
-    input: "split/sequences_subsample.part_{part}.fasta.gz"
-    output: temp("split/sequences_subsample.part_{part}.fasta")
+    input: "split/sequences.part_{part}.fasta.gz"
+    output: temp("split/sequences.part_{part}.fasta")
     shell: "gunzip -c {input} > {output}"
 
 rule download_nextclade_dataset:        
@@ -45,7 +45,7 @@ rule download_nextclade_dataset:
 
 rule run_nextclade:
     input:
-        sequences = "split/all_subsample.part_{part}.fasta",
+        sequences = "split/sequences.part_{part}.fasta",
         dataset = rules.download_nextclade_dataset.output,
     output:
         output_tsv = temp("results/nextclade_results_{part}.tsv"),
@@ -66,5 +66,5 @@ rule run_nextclade:
 
 rule collect_nextclade_results:
     input: expand("results/nextclade_results_{part:03d}.tsv", part=range(1,split_number+1))
-    output: "nextclade.tsv"
+    output: "results/nextclade.tsv"
     shell: "keep-header {input} -- cat | dos2unix > {output}"
