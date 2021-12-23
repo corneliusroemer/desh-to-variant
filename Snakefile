@@ -8,7 +8,7 @@ wildcard_constraints:
     types="[^_]*",
 
 rule all:
-    input: expand("results/nextclade.tsv)
+    input: "results/nextclade.tsv
 
 rule download_sequences:
     output: "data/sequences.fasta.xz"
