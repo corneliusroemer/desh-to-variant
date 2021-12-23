@@ -8,7 +8,7 @@ wildcard_constraints:
     types="[^_]*",
 
 rule all:
-    input: expand("results/nextclade_{types}.{diff_type}",diff_type=["diff","wdiff"],types=["clades","qc","score","alignment","errors","insertions"])
+    input: expand("results/nextclade.tsv)
 
 rule download_sequences:
     output: "data/sequences.fasta.xz"
