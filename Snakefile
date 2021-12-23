@@ -1,6 +1,6 @@
 split_number = 50
 
-localrules: collect_nextclade_results,unzip_split,split_sequences,download_nextclade_dataset,download_sequences
+localrules: xz_to_gz,collect_nextclade_results,unzip_split,split_sequences,download_nextclade_dataset,download_sequences
 
 wildcard_constraints:
     version="[^_]*",
